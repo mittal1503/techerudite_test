@@ -22,7 +22,8 @@ const verifyEmail = async(req,res)=>{
           }
         })
       console.log("user",user)
-      res.send({message:"email verify successfully"})
+      res.redirect(303,'http://localhost:3002/email-verify')
+  
     }
    
      else

@@ -7,7 +7,7 @@ const mailer = require("../utils/email")
 
 const registerUser = async(req,res)=>{
     const {firstname,lastname,role,email,password,emailVerified} = req.body;
-    // console.log("reqbody",req.body);
+    console.log("reqbody",req.body);
     try{
     const result = await Prisma.user.deleteMany();
     console.log("res",result);
@@ -27,7 +27,7 @@ const registerUser = async(req,res)=>{
             }
         });
         if(presetuser)
-           res.send({message:"User already exist"})
+           res.send({error_message:"User already exist with this Email"})
         
         else{
             const newUser = await Prisma.user.create({ data: user })
@@ -51,7 +51,7 @@ const registerUser = async(req,res)=>{
     catch(err)
     {
         console.log("error",err)
-        res.send({message:err})
+        res.send({err:err})
     }
 }
 const loginUser = async(req,res)=>{
@@ -59,29 +59,40 @@ const loginUser = async(req,res)=>{
    try{
        const user = await Prisma.user.findUnique({
            where:{
-               email:email
+               email:email,
            }
        })
       
        if(!user)
-        res.send({message: "User not found"})
+        res.send({error_message: "User not found"})
        else if(user.role != 'ADMIN')
-        res.send({message:"You are not allowed to login"})
+        res.send({error_message:"You are not allowed to login"})
+       else if(!user.emailVerified)
+        res.send({error_message:"Please verify your email For login"})
+       
        else{
            const isMatch = await bcrypt.compare(password,user.password);
            if(!isMatch)
            {
-               res.send({message:"Invalid password"})
+               res.send({error_message:"Invalid password"})
            }
            else{
-               res.send({user,message:"User found"})
+               const update_user = await Prisma.user.update({
+                where:{
+                    email:email
+                },
+                data:{
+                    emailVerified:true
+                }
+               })
+               res.send({message:"User found",user:update_user})
            }
        }
 
    }catch(err)
    {
      console.log("error",err)
-     res.send({message:err})
+     res.send({err:err})
    }
 } 
 
