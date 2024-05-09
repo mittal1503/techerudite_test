@@ -22,7 +22,7 @@ const verifyEmail = async(req,res)=>{
           }
         })
       console.log("user",user)
-      res.redirect(303,'http://localhost:3002/email-verify')
+      res.redirect(303,process.env.REDIRECT_URL)
   
     }
    
